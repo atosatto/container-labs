@@ -35,6 +35,8 @@ do
     --engine-install-url=https://test.docker.com \
     ${hostname}
   docker-machine ssh ${hostname} docker swarm join --manager $(docker-machine ip ${PREFIX}-sw01):2377
+  nodeid=$(docker-machine ssh ${hostname} docker info | grep NodeID | sed -e 's/NodeID://')
+  docker-machine ssh ${PREFIX}-sw01 docker node accept ${nodeid}
 done
 
 # create the swarm workers
