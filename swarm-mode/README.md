@@ -1,6 +1,32 @@
+Docker "Swarm Mode" Lab
+=======================
+
+1. Bring up the Lab
+-------------------
+
+Run the `swarm-up.sh` script to provision on digitalocean a cluster
+of 3 Manager and 3 Workers.
+Notice that in order to let the script works, you should have
+`docker-machine` installed and the `DIGITAL_OCEAN_TOKEN="dotoken"` variable
+exported in your env.
 
 ```bash
-docker-machine ls                                                                            !10013
+$ ./swarm-up.sh
+[...]
+ID                           HOSTNAME  MEMBERSHIP  STATUS  AVAILABILITY  MANAGER STATUS
+12wi5akdqwn0r4o6fzo6030w6    do-sw06   Accepted    Ready   Active
+2j559nfxk4s0u30na9mcthrhh    do-sw05   Accepted    Ready   Active
+8cn08zr9bocyqjprnwye9snu9    do-sw04   Accepted    Ready   Active
+9uxy02gl6jv97gfu75z3xfha4    do-sw03   Accepted    Ready   Active        Reachable
+9xykkntcwuv7ga3hhtf9bs2q9    do-sw02   Accepted    Ready   Active        Reachable
+cao484yrumhqhmgtka9h22aes *  do-sw01   Accepted    Ready   Active        Leader
+```
+
+Once you have your swarm cluster up & running you can use `docker-machine`
+to list the active nodes
+
+```bash
+$ docker-machine ls
 NAME      ACTIVE   DRIVER         STATE     URL                          SWARM   DOCKER        ERRORS
 do-sw01   -        digitalocean   Running   tcp://95.85.14.252:2376              v1.12.0-rc3
 do-sw02   -        digitalocean   Running   tcp://95.85.14.34:2376               v1.12.0-rc3
@@ -10,17 +36,28 @@ do-sw05   -        digitalocean   Running   tcp://146.185.178.76:2376           
 do-sw06   -        digitalocean   Running   tcp://146.185.162.103:2376           v1.12.0-rc3
 ```
 
-```bash
-eval $(docker-machine env do-sw01)
-```
+and to setup you local docker client to forward commands to the docker swarm leader.
 
 ```bash
-docker network create -d overlay catnet                                                      !10019
+$ eval $(docker-machine env do-sw01)
+```
+
+2. Overlay network creation
+---------------------------
+
+Create a new overlay network using the `docker network` command.
+The `-d` flag let's you specify which network driver to use.
+In "Swarm Mode" the overlay network does not require an external key-value store.
+It is integrated into the engine.
+The overlay provides reachability between the hosts across the underlay network.
+Out of the box containers on the same overlay network will be able to ping
+each other without any other special configuration.
+
+```bash
+$ docker network create -d overlay catnet
 a0cu2jdqywf35razz55giu2uo
-```
 
-```bash
-docker network ls                                                                            !10020
+$ docker network ls
 NETWORK ID          NAME                DRIVER              SCOPE
 a1a2ca690b2b        bridge              bridge              local
 a0cu2jdqywf3        catnet              overlay             swarm
@@ -30,24 +67,63 @@ eczh26vnzr39        ingress             overlay             swarm
 298bfdda1928        none                null                local
 ```
 
+3. Spawning docker services
+---------------------------
+
+Services are a new concept in Docker 1.12.
+They work with swarms and are intended for long-running cluster-wide containers.
+The `docker service create` command takes exactly the same basic arguments of
+`docker run` plus some extras needed to provision containers in cluster
+(e.g. the `--replicas` flag).
+
 ```bash
-docker service create --name cat-app --network catnet -p 8000:5000 markchurch/cats           !10023
+$ docker service create --name cat-app --network catnet -p 8000:5000 markchurch/cats
 evr16r1s5xb1wwlowwjgbv4xy
 ```
 
+To list the running services we can use the `docker service ls` command.
+The output it's very similar to the one of kubernetes's `kubectl get pods`
+as the underlying concepts are pretty similar: the "swarm mode"
+implements a state reconciliation algorithm based on Raft, thus it
+keeps monitoring the state of the cluster and tries to converge it
+to the desired state.
+
 ```bash
-docker service ls                                                                            !10024
+$ docker service ls
 ID            NAME     REPLICAS  IMAGE            COMMAND
 evr16r1s5xb1  cat-app  0/1       markchurch/cats
 ```
 
-```bash
-docker service update --replicas 100 cat-app
-cat-app
-```
+Scaling the number of active instances of a service requires to update
+its definition using the `docker service update` command.
+Swarm will now try to converge the number of active containers for the service
+`cat-app` in the cluster to the new replica value.
 
 ```bash
-docker service tasks cat-app
+$ docker service update --replicas 30 cat-app
+cat-app
+$ docker service ls
+ID            NAME     REPLICAS  IMAGE            COMMAND
+evr16r1s5xb1  cat-app  1/30       markchurch/cats
+$ docker service ls
+ID            NAME     REPLICAS  IMAGE            COMMAND
+evr16r1s5xb1  cat-app  30/30       markchurch/cats
+```
+
+"Swarm Mode" is implemented over the SwarmKit project.
+SwarmKit it's a library that provides all the building blocks required
+to implement a distributed application-level clustered tasks scheduler.
+SwarmKit's tasks are the scheduled unit of the orchestration and
+can be whatever it's required by its implementation:
+applications, containers, unikernel, vms, storage volumes, etc.
+The docker-engine "Swarm Mode", right now, leverage SwarmKit to provision
+containers.
+The Docker Engine exposes all these informations through the
+`docker service tasks` command listing the tasks provisioned by the scheduler,
+its state and node in which are running.
+
+```bash
+$ docker service tasks cat-app
 ID                         NAME         SERVICE  IMAGE            LAST STATE              DESIRED STATE  NODE
 dy7hicejamm0c5d9v9xebtj9y  cat-app.1    cat-app  markchurch/cats  Running About a minute  Running        do-sw01
 9a2az4z0bajolfa4gh4e77nyi  cat-app.2    cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw04
@@ -79,10 +155,4 @@ cdtjbhxjh01w79vzxr15hso87  cat-app.26   cat-app  markchurch/cats  Preparing 2 se
 d0kutpq87ekny0c2nq2w6nmkd  cat-app.28   cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw02
 e3a7alyc8d2xon9qd2dcbzh77  cat-app.29   cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw01
 3jhrdddbgfl2bemyrffhlq37u  cat-app.30   cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw03
-```
-
-```bash
-docker service ls
-ID            NAME     REPLICAS  IMAGE            COMMAND
-evr16r1s5xb1  cat-app  30/30   markchurch/cats
 ```
