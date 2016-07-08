@@ -102,9 +102,11 @@ Swarm will now try to converge the number of active containers for the service
 ```bash
 $ docker service update --replicas 30 cat-app
 cat-app
+
 $ docker service ls
 ID            NAME     REPLICAS  IMAGE            COMMAND
 evr16r1s5xb1  cat-app  1/30       markchurch/cats
+
 $ docker service ls
 ID            NAME     REPLICAS  IMAGE            COMMAND
 evr16r1s5xb1  cat-app  30/30       markchurch/cats
@@ -156,3 +158,20 @@ d0kutpq87ekny0c2nq2w6nmkd  cat-app.28   cat-app  markchurch/cats  Preparing 2 se
 e3a7alyc8d2xon9qd2dcbzh77  cat-app.29   cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw01
 3jhrdddbgfl2bemyrffhlq37u  cat-app.30   cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw03
 ```
+
+Lab recording
+-------------
+
+Watch it on the web at https://asciinema.org/a/6xvacwh5mura4zw924as9rabv.
+Play it on the shell
+
+```bash
+$ asciinema play services-demo-rec.json
+```
+
+References and useful links
+---------------------------
+
+- https://docs.docker.com/engine/swarm/
+- https://github.com/docker/dcus-hol-2016/tree/master/docker-orchestration
+- https://speakerdeck.com/hilbert/docker-engine-from-one-to-hundreds-nodes
