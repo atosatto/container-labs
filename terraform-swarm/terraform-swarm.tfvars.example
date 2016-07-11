@@ -1,0 +1,6 @@
+# ssh
+ssh_user = "root"
+ssh_pubkey = "/home/terraform/.ssh/id_rsa.pub"
+
+# docker-swarm
+swarm_nodes = 1

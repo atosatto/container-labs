@@ -1,54 +1,41 @@
-# Specify the provider and access details
-provider "vsphere" {
-  user           = "${var.vsphere_user}"
-  password       = "${var.vsphere_password}"
-  vsphere_server = "${var.vsphere_server}"
+# Provisioning the cloud instances
+module "cloud_instance" {
+  source        = "modules/cloud_instance/digitalocean"
+  name_format   = "do-swarm%02d"
+  num_instances = "${var.swarm_nodes}"
+  api_token     = "${var.do_token}"
+  ssh_user      = "${var.ssh_user}"
+  ssh_pubkey    = "${var.ssh_pubkey}"
 }
 
-# Create a folder
-resource "vsphere_folder" "swarm_lab" {
-  path = "dck-swarmlab"
-}
-
-# Provision the Docker instances
-resource "vsphere_virtual_machine" "swarm_nodes" {
+# Install the docker-engine
+resource "null_resource" "docker_engine" {
   count = "${var.swarm_nodes}"
 
-  name = "${format("dck-lab%02d", count.index + 1)}"
-  folder = "${vsphere_folder.swarm_lab.path}"
-  vcpu   = 2
-  memory = 2048
-
-  network_interface {
-    label = "VM Network"
-    ipv4_address = "${lookup(var.instance_ips, count.index)}"
-    ipv4_prefix_length = "24"
-  }
-
-  disk {
-    template = "centos-7"
-  }
-
   connection {
+    host = "${element(split(",", module.cloud_instance.ipv4_addresses), count.index)}"
     user = "${var.ssh_user}"
-    password = "${var.ssh_password}"
   }
 
-  # Install Docker on all the instances
   provisioner "remote-exec" {
     inline = [
       "curl -fsSL https://test.docker.com/ | sh",
+      "systemctl enable docker",
+      "systemctl start docker",
     ]
   }
 }
 
-# Init Swarm Cluster
+# Init "swarm mode"
 resource "null_resource" "swarm_init" {
+  count = 1
+
   connection {
-    user        = "${var.ssh_user}"
-    password    = "${var.ssh_password}"
-    host        = "dck-lab01"
+    host = "${element(split(",", module.cloud_instance.ipv4_addresses), 0)}"
+    user = "${var.ssh_user}"
   }
+
+  depends_on = ["null_resource.docker_engine"]
 
   provisioner "remote-exec" {
     inline = [
@@ -57,20 +44,20 @@ resource "null_resource" "swarm_init" {
   }
 }
 
-# Join Swarm Nodes
-resource "null_resource" "swarm_nodes" {
+# Join nodes
+resource "null_resource" "swarm_join" {
   count = "${var.swarm_nodes - 1}"
 
   connection {
-    user        = "${var.ssh_user}"
-    password    = "${var.ssh_password}"
-    host        = "${format("dck-lab%02d", count.index + 1)}"
+    host = "${element(split(",", module.cloud_instance.ipv4_addresses), count.index + 1)}"
+    user = "${var.ssh_user}"
   }
 
   depends_on = ["null_resource.swarm_init"]
 
   triggers {
-    master_ip = "${lookup(var.instance_ips, 0)}"
+    //  master_ip = "${lookup(var.instance_ips, 0)}"
+    master_ip = "${element(split(",", module.cloud_instance.ipv4_addresses), 0)}"
   }
 
   provisioner "remote-exec" {
@@ -81,6 +68,8 @@ resource "null_resource" "swarm_nodes" {
 }
 
 # Promote Swarm Masters
+
+
 /*resource "null_resource" "swarm_promote" {
   count = "${var.swarm_nodes - 1}"
 

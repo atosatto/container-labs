@@ -1,0 +1,8 @@
+# User variables
+*.tfvars
+
+.terraform
+
+# Compiled files
+*.tfstate
+*.tfstate.backup
