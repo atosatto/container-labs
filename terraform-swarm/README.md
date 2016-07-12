@@ -1,5 +1,5 @@
-Swarm Mode Cluster Provisioning with Terraform
-==============================================
+Docker Swarm Provisioning with Terraform
+========================================
 
 Docker "Swarm Mode" cluster provisioning with Terraform.
 
