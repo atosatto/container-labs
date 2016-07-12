@@ -8,6 +8,7 @@ Index
 -----
 
 1. [Native Docker Orchestration with Swarm Mode](https://github.com/atosatto/docker-labs/tree/master/swarm-mode)
+2. [Docker Swarm Mode Cluster Provisioning with Terraform](https://github.com/atosatto/docker-labs/tree/master/terraform-swarm)
 
 Author Information
 ------------------

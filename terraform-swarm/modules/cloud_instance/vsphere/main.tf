@@ -5,39 +5,19 @@ provider "vsphere" {
   vsphere_server = "${var.vsphere_server}"
 }
 
-# Create a folder
-resource "vsphere_folder" "docker_nodes" {
-  path = "docker-terraform"
-}
-
 # Provision the Docker instances
-resource "vsphere_virtual_machine" "docker_nodes" {
-  count = "${var.docker_nodes}"
+resource "vsphere_virtual_machine" "cloud_instance" {
+  count = "${var.num_instances}"
 
-  name   = "${format("dck-lab%02d", count.index + 1)}"
-  folder = "${vsphere_folder.docker_nodes.path}"
-  vcpu   = 2
-  memory = 2048
+  name   = "${format("${var.name_format}", count.index + 1)}"
+  vcpu   = "${var.vm_vcpu}"
+  memory = "${var.vm_memory}"
 
   network_interface {
-    label              = "VM Network"
-    ipv4_address       = "${lookup(var.instance_ips, count.index)}"
-    ipv4_prefix_length = "24"
+    label = "${var.vm_net}"
   }
 
   disk {
-    template = "centos-7"
-  }
-
-  connection {
-    user     = "${var.ssh_user}"
-    password = "${var.ssh_password}"
-  }
-
-  # Install Docker on all the instances
-  provisioner "remote-exec" {
-    inline = [
-      "curl -fsSL https://test.docker.com/ | sh",
-    ]
+    template = "${var.vm_template}"
   }
 }

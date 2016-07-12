@@ -1,10 +1,12 @@
-Swarm Cluster Provisioning with Terraform
-=========================================
+Swarm Mode Cluster Provisioning with Terraform
+==============================================
+
+Docker "Swarm Mode" cluster provisioning with Terraform.
 
 Prerequisites
 -------------
 
-- [terraform](https://www.terraform.io/downloads.html)
+- [Terraform](https://www.terraform.io/downloads.html)
 - A DigitalOcean account and a valid API AuthToken (see https://cloud.digitalocean.com/settings/api/tokens)
 
 Usage
