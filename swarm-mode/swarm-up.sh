@@ -39,23 +39,27 @@ promote_node () {
   docker-machine ssh $1 "docker node promote ${nodeid}"
 }
 
+# Hostname of the swarm cluster leader
+swarm_leader=""
+
 # creating the cluster instances
 for (( i=1; i <= $((NUM_WORKERS + NUM_MANAGERS)); i++ ))
 do
 
-  hostname=${PREFIX}-sw$(printf %02d $i)
-  do_instance ${hostname}
+  node=${PREFIX}-sw$(printf %02d $i)
+  do_instance ${node}
 
   if [[ $i -eq 1 ]]; then
-    init_cluster ${hostname}
+    init_cluster ${node}
+    swarm_leader=${node}
   else
-    join_node ${PREFIX}-sw01 ${hostname}
+    join_node ${swarm_leader} ${node}
     if [[ $i -lt $(( $NUM_WORKERS + 1)) ]]; then
-      promote_node ${PREFIX}-sw01 ${hostname}
+      promote_node ${swarm_leader} ${node}
     fi
   fi
 
 done
 
 # list nodes
-docker-machine ssh ${PREFIX}-sw01 docker node ls
+docker-machine ssh ${swarm_leader} docker node ls
