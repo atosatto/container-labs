@@ -112,51 +112,52 @@ ID            NAME     REPLICAS  IMAGE            COMMAND
 evr16r1s5xb1  cat-app  30/30       markchurch/cats
 ```
 
-"Swarm Mode" is implemented over the SwarmKit project.
+"Swarm Mode" implementation relies on the SwarmKit project.
 SwarmKit it's a library that provides all the building blocks required
 to implement a distributed application-level clustered tasks scheduler.
-SwarmKit's tasks are the scheduled unit of the orchestration and
-can be whatever it's required by its implementation:
+SwarmKit tasks are the orchestrator scheduling unit and can be:
 applications, containers, unikernel, vms, storage volumes, etc.
 The docker-engine "Swarm Mode", right now, leverage SwarmKit to provision
 containers.
 The Docker Engine exposes all these informations through the
-`docker service tasks` command listing the tasks provisioned by the scheduler,
+`docker service ps` command listing the tasks provisioned by the scheduler,
 its state and node in which are running.
 
 ```bash
-$ docker service tasks cat-app
-ID                         NAME         SERVICE  IMAGE            LAST STATE              DESIRED STATE  NODE
-dy7hicejamm0c5d9v9xebtj9y  cat-app.1    cat-app  markchurch/cats  Running About a minute  Running        do-sw01
-9a2az4z0bajolfa4gh4e77nyi  cat-app.2    cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw04
-acor0wgtsvnbibpapsnll0yxr  cat-app.3    cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw06
-2a06eipx0ss75yqs5ade2f0r5  cat-app.4    cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw05
-99zv7ndrspa9f4ah766qoke4z  cat-app.5    cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw06
-7f5sf8wg12xtaxzt10fgiksw0  cat-app.6    cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw05
-2fxu68j0i54gv3ucfye2mq08u  cat-app.7    cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw03
-cqctkgtjlwau6l81q6uhdbhqr  cat-app.8    cat-app  markchurch/cats  Starting 2 seconds      Running        do-sw01
-6g4pqpy32qay26fv72fjims12  cat-app.9    cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw03
-e33omn80onpsftr2m8i6skyoi  cat-app.10   cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw01
-em8cmm1y2510nrwj2pn0qb003  cat-app.11   cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw01
-dnraaed68yw7023z0ym7eh5xb  cat-app.12   cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw02
-6ufcndskeycnrsh4dbal5vd6c  cat-app.13   cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw05
-05xizhxhmet8en8rhwirchubz  cat-app.14   cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw05
-3ma4joixqqszmbseytnglffty  cat-app.15   cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw04
-9n42x7mecy21d1rjbkd563nnm  cat-app.16   cat-app  markchurch/cats  Starting 2 seconds      Running        do-sw01
-0qvdfnm97jpmb5x1gidl11rmb  cat-app.17   cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw02
-cdfhaqsh8w7kaih3ze3x0mdaz  cat-app.18   cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw04
-0k17f532coav05ymp3bg5m9qu  cat-app.19   cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw02
-ab6okswyzjsavzfg5j0lat9zs  cat-app.20   cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw02
-90o27th3wcds488ss70svd9f6  cat-app.21   cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw03
-6h3cwv6qpq9aq0sh1pqqbox5x  cat-app.22   cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw06
-bp521i62wb7d5mcqpnqrn4qvn  cat-app.23   cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw03
-92bc896wza378vjbrmno4x2dj  cat-app.24   cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw01
-4pl5v2izho97ny2o4udp4065h  cat-app.25   cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw01
-cdtjbhxjh01w79vzxr15hso87  cat-app.26   cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw01
-735xvnzar77smxdc3bden78wh  cat-app.27   cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw06
-d0kutpq87ekny0c2nq2w6nmkd  cat-app.28   cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw02
-e3a7alyc8d2xon9qd2dcbzh77  cat-app.29   cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw01
-3jhrdddbgfl2bemyrffhlq37u  cat-app.30   cat-app  markchurch/cats  Preparing 2 seconds     Running        do-sw03
+$ docker service ps cat-app
+ID                         NAME            IMAGE            NODE                            DESIRED STATE  CURRENT STATE           ERROR
+4arryw3w5bcahdk154kmwnpte  cat-app.1       markchurch/cats  do-sw01  Running        Running 4 minutes ago
+6y4d56horbwdqripne3ez0bnu  cat-app.2       markchurch/cats  do-sw01  Running        Running 4 minutes ago
+9hairy0bcrhjvvhpyyighfrx9  cat-app.3       markchurch/cats  do-sw01  Running        Running 4 minutes ago
+cv1yqsz2d4vtq2fsiq8cqcfy9  cat-app.4       markchurch/cats  do-sw03  Running        Running 4 minutes ago
+6le9bmgqjtqkh3fdsyv7p8wha  cat-app.5       markchurch/cats  do-sw01  Running        Running 4 minutes ago
+emkrm3ue32ymar6jnyys6vrvr  cat-app.6       markchurch/cats  do-sw03  Running        Running 4 minutes ago
+1e79cv8nlkfntm3mmj8j4q8c7  cat-app.7       markchurch/cats  do-sw03  Running        Running 4 minutes ago
+cbmy4i85r8gp4ucnbmv6slyf3  cat-app.8       markchurch/cats  do-sw02  Running        Running 4 minutes ago
+5vubw2zgmklk9f2fn3wu7ed79  cat-app.9       markchurch/cats  do-sw01  Running        Running 4 minutes ago
+4jbuo618nf02tau5o3jsqddqi  cat-app.10      markchurch/cats  do-sw03  Running        Running 4 minutes ago
+a9ovrcbtipms4n4sdq2ja2654  cat-app.11      markchurch/cats  do-sw02  Running        Running 4 minutes ago
+9dfgk3nxocrrfd1rm2qmmr7je   \_ cat-app.11  markchurch/cats  do-sw03  Shutdown       Rejected 5 minutes ago  "failed to allocate gateway (1…"
+2jwmfe96nho7p6d628nx8pp24  cat-app.12      markchurch/cats  do-sw03  Running        Running 4 minutes ago
+a20n1kk7sbt3vmsol1lv24900  cat-app.13      markchurch/cats  do-sw02  Running        Running 4 minutes ago
+2obyq7pewbnrfw56ps3hdt0x5  cat-app.14      markchurch/cats  do-sw03  Running        Running 4 minutes ago
+cshhnpn2p407r53ggipirt1qn  cat-app.15      markchurch/cats  do-sw03  Running        Running 4 minutes ago
+1dm4eet9wvsoxe2u2qpcrx7pa  cat-app.16      markchurch/cats  do-sw02  Running        Running 4 minutes ago
+4gye2xkanqwqgwshgpswsttqz  cat-app.17      markchurch/cats  do-sw01  Running        Running 5 minutes ago
+19lbbqtafkqgupejmsvcg6i1g  cat-app.18      markchurch/cats  do-sw02  Running        Running 5 minutes ago
+1kg8h3bh99eztcj0i5gizbsqt  cat-app.19      markchurch/cats  do-sw02  Running        Running 4 minutes ago
+eh7ncc1swvcgqpawrpd4jpjlk  cat-app.20      markchurch/cats  do-sw02  Running        Running 4 minutes ago
+1x8fxalnftq705obwdw2ia5c9  cat-app.21      markchurch/cats  do-sw03  Running        Running 4 minutes ago
+eu31wt283bbu1fxo63x7xyvqe  cat-app.22      markchurch/cats  do-sw01  Running        Running 5 minutes ago
+bkm0u6pks30zw6trjkyjugvzv  cat-app.23      markchurch/cats  do-sw02  Running        Running 4 minutes ago
+4fd9dp5i2x8wdgm8tv443l47z  cat-app.24      markchurch/cats  do-sw02  Running        Running 4 minutes ago
+4io3ltzfox1786g2xnz3pq1ld  cat-app.25      markchurch/cats  do-sw03  Running        Running 4 minutes ago
+88jxvk7jg7eoi4utkv31fby8n   \_ cat-app.25  markchurch/cats  do-sw02  Shutdown       Rejected 5 minutes ago  "failed to allocate gateway (1…"
+3xgo6xcfw3ivqc3s3pryqqjqb  cat-app.26      markchurch/cats  do-sw02  Running        Running 4 minutes ago
+ar4lrwlf6uwd9pjmv2utzp4b2  cat-app.27      markchurch/cats  do-sw01  Running        Running 4 minutes ago
+0cirgurq65ccpxucm0rpo0ova  cat-app.28      markchurch/cats  do-sw01  Running        Running 4 minutes ago
+4z5bysnai014zz8jurrqtsh0q  cat-app.29      markchurch/cats  do-sw01  Running        Running 4 minutes ago
+14cwjdds31ngq2l8h7tn691vh  cat-app.30      markchurch/cats  do-sw03  Running        Running 4 minutes ago
 ```
 
 Lab recording
