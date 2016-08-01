@@ -2,14 +2,12 @@
 
 SIZE=2gb
 REGION=ams2
-IMAGE=ubuntu-15-10-x64
+IMAGE=ubuntu-16-04-x64
 
 PREFIX="do"
 
 NUM_MANAGERS=3
 NUM_WORKERS=3
-
-SWARM_SECRET="doswarmlab"
 
 # Create a new Docker instance on digitalocean
 do_instance () {
@@ -20,7 +18,6 @@ do_instance () {
     --digitalocean-region=${REGION} \
     --digitalocean-private-networking=true \
     --digitalocean-image=${IMAGE} \
-    --engine-install-url=https://test.docker.com \
     $1
 }
 
@@ -28,46 +25,45 @@ do_instance () {
 init_cluster () {
   docker-machine ssh $1 \
     docker swarm init \
-      --secret ${SWARM_SECRET}
-  echo "$(docker-machine ssh $1 docker info | grep CACertHash | sed -e 's/CACertHash://')"
+      --listen-addr $(docker-machine ip $1) \
+      --advertise-addr $(docker-machine ip $1)
 }
 
-# Join node $2 to the cluster managed by $1
+# Join the node $1 with token $2 to the cluster created by $3
 join_node () {
-  docker-machine ssh $2 \
-    docker swarm join \
-      --secret ${SWARM_SECRET} \
-      --ca-hash $3 \
-      "$(docker-machine ip $1):2377"
-}
-
-# Promote node $2 to manager of the swarm cluster.
-# The promotion is performed by the manager $1.
-promote_node () {
-  nodeid=$(docker-machine ssh $2 docker info | grep NodeID | sed -e 's/NodeID://')
   docker-machine ssh $1 \
-    docker node promote ${nodeid}
+    docker swarm join \
+      --token $2 \
+      --listen-addr $(docker-machine ip $1) \
+      --advertise-addr $(docker-machine ip $1) \
+      "$(docker-machine ip $3):2377"
 }
 
 # Hostname of the swarm cluster leader
 swarm_leader=""
-swarm_cacert=""
+worker_tk=""
+manager_tk=""
 
 # creating the cluster instances
 for (( i=1; i <= $((NUM_WORKERS + NUM_MANAGERS)); i++ ))
 do
 
   node=${PREFIX}-sw$(printf %02d $i)
+  echo "======> Creating the docker node ${node}..."
   do_instance ${node}
 
   if [[ $i -eq 1 ]]; then
-    swarm_cacert=$(init_cluster ${node})
+    echo "======> Initializing first swarm manager ..."
+    init_cluster "${node}"
     swarm_leader=${node}
+    worker_tk=$(docker-machine ssh ${node} docker swarm join-token -q worker)
+    manager_tk=$(docker-machine ssh ${node} docker swarm join-token -q manager)
+  elif [[ $i -lt $(( $NUM_WORKERS + 1 )) ]]; then
+    echo "======> $node joining swarm as manager ..."
+    join_node "${node}" "${manager_tk}" "${swarm_leader}"
   else
-    join_node ${swarm_leader} ${node} ${swarm_cacert}
-    if [[ $i -lt $(( $NUM_WORKERS + 1 )) ]]; then
-      promote_node ${swarm_leader} ${node}
-    fi
+    echo "======> $node joining swarm as worker ..."
+    join_node "${node}" "${worker_tk}" "${swarm_leader}"
   fi
 
 done
