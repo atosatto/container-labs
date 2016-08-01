@@ -1,0 +1,71 @@
+---
+
+- name: "Create the dropletes on DigitalOcean."
+  hosts: digitalocean
+  vars:
+    do_token: "Your DigitalOcean API token"
+    do_ssh_key: do-swarm  # The name of the DigitalOcean SSH key to use or create.
+    do_region: ams2       # The name of the DigitalOcean region where to provision the Swarm cluster.
+    do_size: 2gb          # The size of the Swarm nodes.
+    do_image: centos-7-2-x64  # The Swarm nodes base image.
+    sw_num_nodes: 6       # The total number of nodes in the Swarm cluster.
+    sw_num_managers: 3    # The number of Swarm Managers in the cluster.
+  tasks:
+
+    # - name: Ensure ssh key exists
+    #   user:
+    #     name: {{ ansible_user_id }}
+    #     generate_ssh_key: yes
+    #     ssh_key_file: .ssh/id_rsa
+
+    - name: Upload the key to DigitalOcean.
+      digital_ocean:
+        name: "{{ do_ssh_key }}"
+        command: ssh
+        ssh_pub_key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+        api_token: "{{ do_token }}"
+        state: present
+      register: do_ssh_key_var
+
+    - name: Create the Swarm nodes droplets.
+      digital_ocean:
+        name: "do-sw{{ '%02d' % item | int }}"
+        size_id: "{{ do_size }}"
+        region_id: "{{ do_region }}"
+        image_id: "{{ do_image }}"
+        ssh_key_ids: "{{ do_ssh_key_var.ssh_key.id }}"
+        unique_name: yes
+        command: droplet
+        api_token: "{{ do_token }}"
+        state: present
+      with_sequence: count="{{ sw_num_nodes }}"
+      register: droplet_details
+
+    - debug: msg="{{ item.droplet }}"
+      with_items: droplet_details.results
+
+    - debug: msg={{ item }}
+      with_items: "{{ droplet_details.results[:sw_num_managers] }}"
+
+    - name: Add the Swarm Managers to the in-memory inventory.
+      add_host:
+        name: "{{ item.droplet.ip_address }}"
+        groups: do_droplets, docker_swarm_manager
+        ansible_ssh_user: root
+      changed_when: False
+      with_items: "{{ droplet_details.results[:sw_num_managers] }}"
+      when: droplet_details.results is defined
+
+    - name: Add the Swarm Workers to the in-memory inventory.
+      add_host:
+        name: "{{ item.droplet.ip_address }}"
+        groups: do_droplets, docker_swarm_node
+        ansible_ssh_user: root
+      changed_when: False
+      with_items: "{{ droplet_details.results[sw_num_managers:] }}"
+      when: droplet_details.results is defined
+
+- name: "Provision Docker Swarm Cluster"
+  hosts: do_droplets
+  roles:
+    - {role: atosatto.docker-swarm }
