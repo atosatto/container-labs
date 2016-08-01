@@ -31,5 +31,11 @@ Download and install the [atosatto.docker-swarm](https://galaxy.ansible.com/atos
 role from Ansible Galaxy.
 
 ```bash
+ansible-galaxy install -r requirements.yml
+```
+
+Run the `swarm-up` playbook
+
+```bash
 ansible-playbook -i local -e do_token=$DIGITAL_OCEAN_TOKEN swarm-up.yml
 ```
