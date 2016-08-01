@@ -8,7 +8,9 @@ Index
 -----
 
 1. [Native Docker Orchestration with Swarm Mode](https://github.com/atosatto/docker-labs/tree/master/swarm-mode)
-2. [Docker Swarm Provisioning with Terraform](https://github.com/atosatto/docker-labs/tree/master/terraform-swarm)
+2. Docker Swarm Provisioning Examples
+  - [Terraform](https://github.com/atosatto/docker-labs/tree/master/swarm-mode/terraform)
+  - [Ansible](https://github.com/atosatto/docker-labs/tree/master/swarm-mode/ansible)
 
 Author Information
 ------------------
