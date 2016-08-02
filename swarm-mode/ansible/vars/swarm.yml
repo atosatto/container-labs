@@ -1,0 +1,9 @@
+---
+
+do_token: "Your DigitalOcean API token"
+do_ssh_key: do-swarm  # The name of the DigitalOcean SSH key to use or create.
+do_region: ams2       # The name of the DigitalOcean region where to provision the Swarm cluster.
+do_size: 2gb          # The size of the Swarm nodes.
+do_image: centos-7-2-x64  # The Swarm nodes base image.
+sw_num_nodes: 6       # The total number of nodes in the Swarm cluster.
+sw_num_managers: 3    # The number of Swarm Managers in the cluster.

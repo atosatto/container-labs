@@ -34,8 +34,14 @@ role from Ansible Galaxy.
 ansible-galaxy install -r requirements.yml
 ```
 
-Run the `swarm-up` playbook
+Run the `swarm-up.yml` playbook to create the swarm cluster
 
 ```bash
 ansible-playbook -i local -e do_token=$DIGITAL_OCEAN_TOKEN swarm-up.yml
+```
+
+To destroy the swarm cluster run the `swarm-rm.yml` playbook
+
+```bash
+ansible-playbook -i local -e do_token=$DIGITAL_OCEAN_TOKEN swarm-rm.yml
 ```

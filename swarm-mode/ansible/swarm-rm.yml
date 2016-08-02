@@ -1,0 +1,17 @@
+---
+
+- name: "Remove the droplets on DigitalOcean."
+  hosts: digitalocean
+  vars_files:
+    - vars/swarm.yml
+  tasks:
+
+    - name: Remove the Swarm nodes droplets.
+      digital_ocean:
+        name: "do-sw{{ '%02d' % item | int }}"
+        unique_name: yes
+        command: droplet
+        api_token: "{{ do_token }}"
+        state: absent
+      with_sequence: count="{{ sw_num_nodes }}"
+      register: droplet_details
