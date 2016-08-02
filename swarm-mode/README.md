@@ -163,7 +163,7 @@ ar4lrwlf6uwd9pjmv2utzp4b2  cat-app.27      markchurch/cats  do-sw01  Running    
 Lab recording
 -------------
 
-Watch it on the web at https://asciinema.org/a/6xvacwh5mura4zw924as9rabv.
+Watch it on the web at https://asciinema.org/a/6519t70w1k7xo9iqxek2slm9x.
 Play it on the shell
 
 ```bash
