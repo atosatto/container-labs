@@ -1,0 +1,45 @@
+Vagrant.configure('2') do |config|
+  config.cache.scope = 'machine' if Vagrant.has_plugin?('vagrant-cachier')
+  config.vm.box = 'centos/7'
+
+  def set_digital_ocean(provider, override)
+    override.ssh.private_key_path = '~/.ssh/id_rsa'
+    override.vm.box = 'digital_ocean'
+    override.vm.box_url = "https://github.com/devopsgroup-io/vagrant-digitalocean/raw/master/box/digital_ocean.box"
+
+    provider.token = ENV['DIGITAL_OCEAN_TOKEN']
+    provider.image = 'centos-7-x64'
+    provider.region = 'lon1'
+    provider.size = '1gb'
+    provider.private_networking = true # enable private network interface
+  end
+
+  def set_provider(n)
+    n.vm.provider :digital_ocean do |os, override|
+      set_digital_ocean(os, override)
+    end
+  end
+
+  groups = {
+    "docker_swarm_worker" => [ "do-sw01", "do-sw02"],
+    "docker_swarm_manager" => [ "do-sw03" ]
+  }
+
+  N = 3
+  (1..N).each do |machine_id|
+    config.vm.define "do-sw%02d" % machine_id do |c|
+      c.vm.hostname = "do-sw%02d" % machine_id
+      set_provider(c)
+
+      if machine_id == N
+        c.vm.provision :ansible do |ansible|
+          ansible.groups = groups
+          ansible.playbook = "tests/test.yml"
+          ansible.limit = "all" #otherwise the metadata wont be there for ipv4?
+          ansible.raw_ssh_args = ['-o ControlMaster=no']
+        end
+      end
+    end
+  end
+
+end

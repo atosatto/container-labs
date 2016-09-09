@@ -11,6 +11,7 @@ Index
 2. Docker Swarm Provisioning Examples
   - [Terraform](https://github.com/atosatto/docker-labs/tree/master/swarm-mode/terraform)
   - [Ansible](https://github.com/atosatto/docker-labs/tree/master/swarm-mode/ansible)
+  - [Vagrant & Ansible](https://github.com/atosatto/docker-labs/tree/master/swarm-mode/vagrant-ansible)
 
 Author Information
 ------------------
