@@ -1,6 +1,4 @@
 Vagrant.configure('2') do |config|
-  config.cache.scope = 'machine' if Vagrant.has_plugin?('vagrant-cachier')
-  config.vm.box = 'centos/7'
 
   def set_digital_ocean(provider, override)
     override.ssh.private_key_path = '~/.ssh/id_rsa'
