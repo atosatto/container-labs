@@ -11,7 +11,7 @@ Notice that in order to let the script works, you should have
 exported in your env.
 
 ```bash
-$ ./swarm-up.sh
+$ ./do-swarm-up.sh
 [...]
 ID                           HOSTNAME  MEMBERSHIP  STATUS  AVAILABILITY  MANAGER STATUS
 12wi5akdqwn0r4o6fzo6030w6    do-sw06   Accepted    Ready   Active

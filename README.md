@@ -1,17 +1,17 @@
-Docker Labs
-===========
+Container Labs
+==============
 
-Trash box containing scripts and notes collected diving into docker
+Trash box containing scripts and notes collected diving into containers
 and its advanced features.
 
 Index
 -----
 
-1. [Native Docker Orchestration with Swarm Mode](https://github.com/atosatto/docker-labs/tree/master/swarm-mode)
+1. [Native Docker Orchestration with Swarm Mode](https://github.com/atosatto/container-labs/tree/master/docker-swarm-mode)
 2. Docker Swarm Provisioning Examples
-  - [Terraform](https://github.com/atosatto/docker-labs/tree/master/swarm-mode/terraform)
-  - [Ansible](https://github.com/atosatto/docker-labs/tree/master/swarm-mode/ansible)
-  - [Vagrant & Ansible](https://github.com/atosatto/docker-labs/tree/master/swarm-mode/vagrant-ansible)
+  - [Terraform](https://github.com/atosatto/container-labs/tree/master/docker-swarm-mode/terraform)
+  - [Ansible](https://github.com/atosatto/container-labs/tree/master/docker-swarm-mode/ansible)
+  - [Vagrant & Ansible](https://github.com/atosatto/container-labs/tree/master/docker-swarm-mode/vagrant-ansible)
 
 Author Information
 ------------------
